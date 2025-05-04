@@ -10,20 +10,45 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useState } from "react";
+import { useLoginMutation } from "@/store/authApi";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/store/slices/authSlice";
 import "../../global.css";
 
 export default function LoginScreen() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [userName, setUserName] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+    const [login] = useLoginMutation();
+    const dispatch = useDispatch();
 
-    const handleLogin = () => {
-        console.log("Email", email);
-        console.log("Password", password);
+    // const handleLogin = () => {
+    //     const user = {
+    //         login: email,
+    //         password: password,
+    //     };
 
-        if (email === "admin" && password === "qwerty") {
-            router.navigate("/");
+    //     const url = "https://www.spr311telegrambot.somee.com/api/account/login";
+    //     axios
+    //         .post(url, user)
+    //         .then((response) => {
+    //             if(response.status === 200) {
+    //                 return response.data;
+    //             }
+    //             console.log(response);
+    //         })
+    //         .then((data) => router.navigate("/"))
+    //         .catch((error) => console.log(error));
+    // };
+
+    const handleLogin = async () => {
+        try {
+            const result = await login({userName, password}).unwrap();
+            dispatch(setUser({ email: result.email, userName: result.userName }))
+            router.navigate('/');
+        } catch (error) {
+            console.log(error)
         }
-    };
+    }
 
     return (
         <KeyboardAvoidingView
@@ -44,9 +69,9 @@ export default function LoginScreen() {
 
                 <TextInput
                     style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                    placeholder="Email"
+                    value={userName}
+                    onChangeText={setUserName}
+                    placeholder="Username"
                     keyboardType="email-address"
                     autoCapitalize="none"
                 />
@@ -72,17 +97,17 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 50
+        padding: 50,
     },
     form: {
-        flex: 1
+        flex: 1,
     },
     title: {
         fontSize: 32,
         fontWeight: "bold",
         textAlign: "center",
         marginBottom: 20,
-        color: "coral"
+        color: "coral",
     },
     input: {
         borderWidth: 1,

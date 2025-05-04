@@ -12,26 +12,31 @@ namespace api.Controllers
     public class AccountController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<AppUser> userManager)
+        public AccountController(UserManager<AppUser> userManager, ILogger<AccountController> logger)
         {
             _userManager = userManager;
+            _logger = logger;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginDto dto)
         {
-            if (string.IsNullOrEmpty(dto.Password) || string.IsNullOrEmpty(dto.Login))
+            _logger.LogInformation($"Request data - login: {dto.UserName}. password: {dto.Password}");
+
+            if (string.IsNullOrEmpty(dto.Password) || string.IsNullOrEmpty(dto.UserName))
             {
                 return BadRequest("Login or password is empty");
             }
 
             var user = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.NormalizedUserName == dto.Login.ToUpper()
-                || u.Email == dto.Login.ToUpper());
+                .FirstOrDefaultAsync(u => u.NormalizedUserName == dto.UserName.ToUpper()
+                || u.NormalizedEmail == dto.UserName.ToUpper());
 
             if (user == null) 
             {
+                _logger.LogInformation($"User null");
                 return BadRequest("Incorrect login");
             }
 
@@ -39,7 +44,8 @@ namespace api.Controllers
 
             if (user == null)
             {
-                return BadRequest("Incorrect login");
+                _logger.LogInformation($"Incorrect password");
+                return BadRequest("Incorrect password");
             }
 
             var userDto = new UserDto { UserName = user.UserName, Email = user.Email };
