@@ -11,18 +11,29 @@ import {
 import { router } from "expo-router";
 import { useState } from "react";
 import "../../global.css";
+import axios from "axios";
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const handleLogin = () => {
-        console.log("Email", email);
-        console.log("Password", password);
+        const user = {
+            login: email,
+            password: password,
+        };
 
-        if (email === "admin" && password === "qwerty") {
-            router.navigate("/");
-        }
+        const url = "https://www.spr311telegrambot.somee.com/api/account/login";
+        axios
+            .post(url, user)
+            .then((response) => {
+                if(response.status === 200) {
+                    return response.data;
+                }
+                console.log(response);
+            })
+            .then((data) => console.log(data))
+            .catch((error) => console.log(error));
     };
 
     return (
@@ -72,17 +83,17 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 50
+        padding: 50,
     },
     form: {
-        flex: 1
+        flex: 1,
     },
     title: {
         fontSize: 32,
         fontWeight: "bold",
         textAlign: "center",
         marginBottom: 20,
-        color: "coral"
+        color: "coral",
     },
     input: {
         borderWidth: 1,
