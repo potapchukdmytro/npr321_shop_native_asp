@@ -10,31 +10,45 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useState } from "react";
+import { useLoginMutation } from "@/store/authApi";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/store/slices/authSlice";
 import "../../global.css";
-import axios from "axios";
 
 export default function LoginScreen() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [userName, setUserName] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+    const [login] = useLoginMutation();
+    const dispatch = useDispatch();
 
-    const handleLogin = () => {
-        const user = {
-            login: email,
-            password: password,
-        };
+    // const handleLogin = () => {
+    //     const user = {
+    //         login: email,
+    //         password: password,
+    //     };
 
-        const url = "https://www.spr311telegrambot.somee.com/api/account/login";
-        axios
-            .post(url, user)
-            .then((response) => {
-                if(response.status === 200) {
-                    return response.data;
-                }
-                console.log(response);
-            })
-            .then((data) => console.log(data))
-            .catch((error) => console.log(error));
-    };
+    //     const url = "https://www.spr311telegrambot.somee.com/api/account/login";
+    //     axios
+    //         .post(url, user)
+    //         .then((response) => {
+    //             if(response.status === 200) {
+    //                 return response.data;
+    //             }
+    //             console.log(response);
+    //         })
+    //         .then((data) => router.navigate("/"))
+    //         .catch((error) => console.log(error));
+    // };
+
+    const handleLogin = async () => {
+        try {
+            const result = await login({userName, password}).unwrap();
+            dispatch(setUser({ email: result.email, userName: result.userName }))
+            router.navigate('/');
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     return (
         <KeyboardAvoidingView
@@ -55,9 +69,9 @@ export default function LoginScreen() {
 
                 <TextInput
                     style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                    placeholder="Email"
+                    value={userName}
+                    onChangeText={setUserName}
+                    placeholder="Username"
                     keyboardType="email-address"
                     autoCapitalize="none"
                 />

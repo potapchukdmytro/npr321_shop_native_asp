@@ -23,16 +23,16 @@ namespace api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginDto dto)
         {
-            _logger.LogInformation($"Request data - login: {dto.Login}. password: {dto.Password}");
+            _logger.LogInformation($"Request data - login: {dto.UserName}. password: {dto.Password}");
 
-            if (string.IsNullOrEmpty(dto.Password) || string.IsNullOrEmpty(dto.Login))
+            if (string.IsNullOrEmpty(dto.Password) || string.IsNullOrEmpty(dto.UserName))
             {
                 return BadRequest("Login or password is empty");
             }
 
             var user = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.NormalizedUserName == dto.Login.ToUpper()
-                || u.NormalizedEmail == dto.Login.ToUpper());
+                .FirstOrDefaultAsync(u => u.NormalizedUserName == dto.UserName.ToUpper()
+                || u.NormalizedEmail == dto.UserName.ToUpper());
 
             if (user == null) 
             {
