@@ -5,13 +5,18 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { RootState } from "@/store/store";
-
-import "../../global.css";
+import { useDispatch, useSelector } from "react-redux";
 import { router } from "expo-router";
-import { useSelector } from "react-redux";
+import { clearUser } from "@/store/slices/authSlice";
+import "../../global.css";
 
 export default function HomeScreen() {
-    const email = useSelector((state: RootState) => state.auth.email);    
+    const { isAuth, email } = useSelector((state: RootState) => state.auth);
+    const dispatch = useDispatch();
+
+    const logout = () => {
+        dispatch(clearUser());
+    }   
 
     return (
         <ParallaxScrollView
@@ -75,12 +80,27 @@ export default function HomeScreen() {
                 </ThemedText>
             </ThemedView>
 
+            {!isAuth ? (
+                <ThemedView>
+                    <Button
+                        title="Login"
+                        onPress={() => router.navigate("/auth/login")}
+                    />
+                </ThemedView>
+            ) : (
+                <ThemedView>
+                    <Button
+                        title="Logout"
+                        onPress={logout}
+                    />
+                </ThemedView>
+            )}
             <ThemedView>
-                <Button
-                    title="Login"
-                    onPress={() => router.navigate("/auth/login")}
-                />
-            </ThemedView>
+                    <Button
+                        title="Categories"
+                        onPress={() => router.navigate('/category/categories')}
+                    />
+                </ThemedView>
         </ParallaxScrollView>
     );
 }

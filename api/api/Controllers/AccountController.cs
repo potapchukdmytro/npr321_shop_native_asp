@@ -1,23 +1,24 @@
 ﻿using api.Dto;
 using api.Models;
+using api.Services;
 using api.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
     [ApiController]
     [Route("api/account")]
-    public class AccountController : Controller
+    public class AccountController : AppController
     {
-        private readonly UserManager<AppUser> _userManager;
+        private readonly IAccountService _accountService;
         private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<AppUser> userManager, ILogger<AccountController> logger)
+        public AccountController(ILogger<AccountController> logger, IAccountService accountService)
+            : base(logger)
         {
-            _userManager = userManager;
             _logger = logger;
+            _accountService = accountService;
         }
 
         [HttpPost("login")]
@@ -27,29 +28,13 @@ namespace api.Controllers
 
             if (string.IsNullOrEmpty(dto.Password) || string.IsNullOrEmpty(dto.UserName))
             {
-                return BadRequest("Login or password is empty");
+                string message = "Login or password is empty";
+                _logger.LogInformation($"Response - status: 400 - message: {message}");
+                return BadRequest(message);
             }
 
-            var user = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.NormalizedUserName == dto.UserName.ToUpper()
-                || u.NormalizedEmail == dto.UserName.ToUpper());
-
-            if (user == null) 
-            {
-                _logger.LogInformation($"User null");
-                return BadRequest("Incorrect login");
-            }
-
-            var passResult = await _userManager.CheckPasswordAsync(user, dto.Password);
-
-            if (user == null)
-            {
-                _logger.LogInformation($"Incorrect password");
-                return BadRequest("Incorrect password");
-            }
-
-            var userDto = new UserDto { UserName = user.UserName, Email = user.Email };
-            return Ok(userDto);
+            var response = await _accountService.LoginAsync(dto);
+            return GetActionResult(response);
         }
 
         [HttpPost("register")]
@@ -59,21 +44,13 @@ namespace api.Controllers
                 || string.IsNullOrEmpty(dto.Email)
                 || string.IsNullOrEmpty(dto.UserName))
             {
-                return BadRequest("Empty field");
+                string message = "Empty field";
+                _logger.LogInformation($"Response - status: 400 - message: {message}");
+                return BadRequest(message);
             }
 
-            var user = new AppUser { UserName = dto.UserName, Email = dto.Email };
-            var result = await _userManager.CreateAsync(user, dto.Password);
-
-            if (result.Succeeded)
-            {
-                await _userManager.AddToRoleAsync(user, Constants.RoleUser);
-                return Ok("Register success");
-            }
-            else
-            {
-                return BadRequest(result.Errors.First().Description);
-            }
+            var response = await _accountService.RegisterAsync(dto);
+            return GetActionResult(response);
         }
     }
 }
