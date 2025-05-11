@@ -6,9 +6,9 @@ import {
     TextInput,
     StyleSheet,
     View,
-    Image,
+    Image
 } from "react-native";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useLoginMutation } from "@/store/authApi";
 import { useDispatch } from "react-redux";
@@ -20,35 +20,25 @@ export default function LoginScreen() {
     const [password, setPassword] = useState<string>("");
     const [login] = useLoginMutation();
     const dispatch = useDispatch();
-
-    // const handleLogin = () => {
-    //     const user = {
-    //         login: email,
-    //         password: password,
-    //     };
-
-    //     const url = "https://www.spr311telegrambot.somee.com/api/account/login";
-    //     axios
-    //         .post(url, user)
-    //         .then((response) => {
-    //             if(response.status === 200) {
-    //                 return response.data;
-    //             }
-    //             console.log(response);
-    //         })
-    //         .then((data) => router.navigate("/"))
-    //         .catch((error) => console.log(error));
-    // };
+    const router = useRouter();
 
     const handleLogin = async () => {
         try {
-            const result = await login({userName, password}).unwrap();
-            dispatch(setUser({ email: result.email, userName: result.userName }))
-            router.navigate('/');
+            const result = await login({ userName, password }).unwrap();
+            if (result.payload === null) {
+                throw new Error("Response payload is null");
+            }
+            dispatch(
+                setUser({
+                    email: result.payload.email,
+                    userName: result.payload.userName,
+                })
+            );
+            router.navigate("/");
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
-    }
+    };
 
     return (
         <KeyboardAvoidingView
@@ -88,6 +78,11 @@ export default function LoginScreen() {
                 <Button color="coral" title="Login" onPress={handleLogin} />
                 <View className="my-4">
                     <Button title="Back" onPress={() => router.back()} />
+                </View>
+                <View>
+                    <Text onPress={() => router.replace("/auth/register")} className="text-center text-blue-500">
+                        Don't have account? Register.
+                    </Text>
                 </View>
             </View>
         </KeyboardAvoidingView>
