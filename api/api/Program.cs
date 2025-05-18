@@ -2,14 +2,20 @@ using api.Data;
 using api.Data.Initializer;
 using api.Models;
 using api.Services;
+using api.Services.Category;
+using api.Services.Image;
+using api.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 builder.Services.AddControllers();
 
@@ -58,6 +64,27 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// static files
+string rootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+if(!Directory.Exists(rootPath))
+{
+    Directory.CreateDirectory(rootPath);
+}
+
+string imagesPath = Path.Combine(rootPath, "images");
+
+if(!Directory.Exists(imagesPath))
+{
+    Directory.CreateDirectory(imagesPath);
+    Files.ImagesPath  = imagesPath;
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imagesPath),
+    RequestPath = "/images"
+});
 
 app.Seed();
 
