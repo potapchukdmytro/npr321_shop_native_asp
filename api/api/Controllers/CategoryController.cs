@@ -1,4 +1,5 @@
 ﻿
+using api.Dto;
 using api.Models;
 using api.Services.Category;
 using Microsoft.AspNetCore.Mvc;
@@ -30,9 +31,9 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] Category model)
+        public async Task<IActionResult> CreateAsync([FromForm] CategoryDto dto)
         {
-            var res = await _categoryService.CreateAsync(model);
+            var res = await _categoryService.CreateAsync(dto);
             return res ? Ok() : BadRequest();
         }
 

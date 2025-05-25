@@ -18,7 +18,7 @@ namespace api.Services.Image
                 }
 
                 var types = imageFile.ContentType.Split('/');
-                if (types[0] != "img")
+                if (types[0] != "image")
                 {
                     return null;
                 }

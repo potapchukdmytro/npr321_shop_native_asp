@@ -20,11 +20,11 @@ export const categoryApi = createApi({
             }),
             invalidatesTags: ["Category"],
         }),
-        createCategory: builder.mutation<void, Category>({
-            query: (category) => ({
+        createCategory: builder.mutation<void, FormData>({
+            query: (data) => ({
                 url: "category",
                 method: "POST",
-                body: category,
+                body: data
             }),
             invalidatesTags: ["Category"],
         }),

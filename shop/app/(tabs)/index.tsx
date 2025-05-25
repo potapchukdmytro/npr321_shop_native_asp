@@ -95,12 +95,6 @@ export default function HomeScreen() {
                     />
                 </ThemedView>
             )}
-            <ThemedView>
-                    <Button
-                        title="Categories"
-                        onPress={() => router.navigate('/category/categories')}
-                    />
-                </ThemedView>
         </ParallaxScrollView>
     );
 }

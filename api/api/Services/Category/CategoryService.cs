@@ -1,5 +1,6 @@
-﻿
-using api.Data;
+﻿using api.Data;
+using api.Dto;
+using api.Services.Image;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Category
@@ -7,15 +8,31 @@ namespace api.Services.Category
     public class CategoryService : ICategoryService
     {
         private readonly AppDbContext _context;
+        private readonly IImageService _imageService;
 
-        public CategoryService(AppDbContext context)
+        public CategoryService(AppDbContext context, IImageService imageService)
         {
             _context = context;
+            _imageService = imageService;
         }
 
-        public async Task<bool> CreateAsync(Models.Category model)
+        public async Task<bool> CreateAsync(CategoryDto dto)
         {
-            model.Id = Guid.NewGuid().ToString();
+            var model = new Models.Category
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = dto.Name,
+            };
+
+            if(dto.Image != null)
+            {
+                string? imageName = await _imageService.SaveImageAsync(dto.Image, "categories");
+                if (imageName != null)
+                {
+                    model.Image = Path.Combine("categories", imageName);
+                }
+            }
+
             await _context.Categories.AddAsync(model);
             var res = await _context.SaveChangesAsync();
             return res != 0;

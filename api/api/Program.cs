@@ -49,6 +49,21 @@ builder.Host.UseSerilog();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen();
+
+
+const string corsPolicyName = "CorsPolicy";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(corsPolicyName, builder =>
+    {
+        builder
+        .WithOrigins("http://localhost:8081")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
@@ -56,6 +71,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -77,14 +94,17 @@ string imagesPath = Path.Combine(rootPath, "images");
 if(!Directory.Exists(imagesPath))
 {
     Directory.CreateDirectory(imagesPath);
-    Files.ImagesPath  = imagesPath;
 }
+
+Files.ImagesPath = imagesPath;
 
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(imagesPath),
     RequestPath = "/images"
 });
+
+app.UseCors(corsPolicyName);
 
 app.Seed();
 

@@ -3,63 +3,26 @@ import {
     ListRenderItemInfo,
     Button,
     Image,
-    StyleSheet,
-    TextInput,
+    StyleSheet
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { Category } from "@/store/category/types";
 import {
-    useCreateCategoryMutation,
     useDeleteCategoryMutation,
     useGetCategoriesQuery,
 } from "@/store/category/categoryApi";
 import "../../global.css";
 import { ActivityIndicator } from "@/components/ActivityIndicator";
 import { ThemedText } from "@/components/ThemedText";
-import { useState } from "react";
-import { Asset, launchImageLibrary, launchCamera } from "react-native-image-picker";
+import { router } from "expo-router";
 
 export default function CategoriesScreen() {
-    const [categoryName, setCategoryName] = useState<string>("");
-    const [photo, setPhoto] = useState<Asset | undefined>(undefined);
-
     const { data: categories, isLoading, isError } = useGetCategoriesQuery();
     const [deleteCategory] = useDeleteCategoryMutation();
-    const [createCategory] = useCreateCategoryMutation();
 
     const deleteHandler = async (id: string) => {
         await deleteCategory(id);
     };
-
-    const createHandler = async () => {
-        const category: Category = {
-            id: "",
-            image: "",
-            name: categoryName
-        }
-        const res = await createCategory(category);
-        if(!res.error) {
-            setCategoryName("")
-        }
-    }  
-
-    const selectImage = async () => {
-        launchCamera({mediaType: "photo"}, response => {
-            console.log(response);
-        });
-        console.log("in");
-        await launchImageLibrary({mediaType: "photo"}, (response) => {
-            console.log(response);
-            
-            if(response.didCancel || response.errorCode) {
-                return;
-            }
-
-            if(response.assets) {
-                setPhoto(response.assets[0])
-            }
-        })
-    }
 
     const renderItem = ({ item }: ListRenderItemInfo<Category>) => {
         return (
@@ -96,17 +59,7 @@ export default function CategoriesScreen() {
                     <ActivityIndicator />
                 </View>
             )}
-            <View>
-                <TextInput
-                    style={styles.input}
-                    value={categoryName}
-                    onChangeText={setCategoryName}
-                    placeholder="Name"
-                    keyboardType="default"
-                />
-                <Button color="darkgreen" onPress={() => selectImage()} title="Add image"/>
-                <Button title="Add" onPress={createHandler}/>
-            </View>
+            <Button title="Add" onPress={() => router.navigate('/category/createCategory')}/>
         </>
     );
 }
@@ -119,13 +72,5 @@ const styles = StyleSheet.create({
         width: 400,
         height: 150,
         resizeMode: "stretch",
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: "black",
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        marginBottom: 15,
-        borderRadius: 15,
-    },
+    }
 });
